@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MedAI | Diagnosis History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f7f6; padding: 40px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #f0f2f5; padding-bottom: 20px; }
+        h2 { color: #1a73e8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; background: #f8f9fa; padding: 15px; color: #555; border-bottom: 2px solid #dee2e6; }
+        td { padding: 15px; border-bottom: 1px solid #eee; color: #333; font-size: 14px; }
+        .status-badge { background: #e8f0fe; color: #1a73e8; padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .back-btn { text-decoration: none; color: #666; font-size: 14px; }
+        .back-btn:hover { color: #1a73e8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <a href="{{ url_for('index') }}" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                <h2 style="margin-top:10px;">Diagnosis History</h2>
+            </div>
+            <div style="text-align: right;">
+                <p style="font-size: 12px; color: #999;">Logged in as:</p>
+                <strong>{{ session['user'] }}</strong>
+            </div>
+        </header>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Patient</th>
+                    <th>Symptoms Observed</th>
+                    <th>AI Prediction</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in history %}
+                <tr>
+                    <td>{{ row[5] }}</td> <td>{{ row[2] }}</td> <td>{{ row[3] }}</td> <td><span class="status-badge">{{ row[4] }}</span></td> </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align:center; padding: 50px; color: #999;">No diagnosis records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
