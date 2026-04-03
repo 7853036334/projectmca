@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Health Care Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Modern Medical Color Palette & Animations */
+        :root {
+            --primary-blue: #0d6efd;
+            --medical-teal: #1abc9c;
+            --soft-white: #f8f9fa;
+            --dark-glass: rgba(0, 0, 0, 0.85);
+            --accent-coral: #ff6b6b;
+        }
+
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url("{{ url_for('static', filename='medical_bg.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Containers */
+        .glass-container {
+            background: var(--dark-glass) !important;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2, .navbar-brand {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            font-weight: 700;
+        }
+
+        /* Entrance Animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUpAnimation 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUpAnimation {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Staggered Button Animation */
+        .toggle-button {
+            border: none !important;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: bold;
+            border-radius: 5px;
+            opacity: 0;
+            animation: fadeInUpAnimation 0.5s ease-out forwards;
+        }
+
+        .toggle-button:hover {
+            transform: scale(1.1) translateY(-5px);
+            filter: brightness(1.1);
+        }
+
+        /* Button Delays */
+        .toggle-button:nth-child(1) { animation-delay: 0.1s; }
+        .toggle-button:nth-child(2) { animation-delay: 0.2s; }
+        .toggle-button:nth-child(3) { animation-delay: 0.3s; }
+        .toggle-button:nth-child(4) { animation-delay: 0.4s; }
+        .toggle-button:nth-child(5) { animation-delay: 0.5s; }
+        .toggle-button:nth-child(6) { animation-delay: 0.6s; }
+
+        .table-dark { --bs-table-bg: transparent !important; }
+
+        .badge-medical {
+            background-color: var(--medical-teal);
+            color: black;
+            font-weight: bold;
+        }
+
+        .table-hover tbody tr { transition: 0.3s; }
+        .table-hover tbody tr:hover {
+            background: rgba(26, 188, 156, 0.1) !important;
+            transform: scale(1.005);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <img class="myimg" src="{{ url_for('static', filename='img.png') }}" alt="logo" width="40" height="40" style="margin-right:10px; border-radius:50%;">
+            <a class="navbar-brand" href="/">Health Center</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                </ul>
+                <div class="nav-right">
+                    <a href="{{ url_for('login_page') }}" class="text-white text-decoration-none">
+                        <i class="fas fa-user-circle"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4 fade-in-up">Health Care Center</h1>
+        
+        <div class="glass-container fade-in-up">
+            <form action="/predict" method="post">
+                <div class="form-group">
+                    <label class="mb-2">Select Symptoms:</label>
+                    <input type="text" class="form-control" name="symptoms" placeholder="e.g. itching, sleeping, aching">
+                </div>
+                <button type="button" id="startSpeechRecognition" class="btn btn-outline-info mt-3" style="border-radius:20px;">
+                    <i class="fas fa-microphone"></i> Start Speech Recognition
+                </button>
+                <div id="transcription" class="mt-2 small text-info"></div>
+                
+                <button type="submit" class="btn btn-danger btn-lg w-100 mt-4" style="background: var(--accent-coral) !important;">Predict</button>
+            </form>
+        </div>
+
+        <hr class="my-5" style="opacity: 0.1;">
+
+        {% if predicted_disease %}
+        <div class="results-section text-center">
+            <h2 class="mb-4 fade-in-up">Our AI System Results</h2>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <button class="toggle-button p-3" data-bs-toggle="modal" data-bs-target="#diseaseModal" style="background:#F39334; width:150px;">Disease</button>
+                <button class="toggle-button p-3" data-bs-toggle="modal" data-bs-target="#descriptionModal" style="background:#268AF3; width:150px;">Description</button>
+                <button class="toggle-button p-3" data-bs-toggle="modal" data-bs-target="#precautionModal" style="background:#F371F9; width:150px;">Precaution</button>
+                <button class="toggle-button p-3" data-bs-toggle="modal" data-bs-target="#medicationsModal" style="background:#F8576F; width:150px;">Medications</button>
+                <button class="toggle-button p-3" data-bs-toggle="modal" data-bs-target="#workoutsModal" style="background:#99F741; width:150px;">Workouts</button>
+                <button class="toggle-button p-3" data-bs-toggle="modal" data-bs-target="#dietsModal" style="background:#E5E23D; width:150px;">Diets</button>
+            </div>
+            <div class="mt-5 fade-in-up" style="animation-delay: 0.8s;">
+                <a href="/" class="btn btn-outline-light" style="border-radius: 20px;">Check Another Symptom</a>
+            </div>
+        </div>
+
+        {% else %}
+            {% if session['user'] %}
+            <div class="history-section mt-5 fade-in-up">
+                <h2 class="text-center mb-4" style="color: var(--medical-teal);">Your Recent Activity</h2>
+                <div class="glass-container">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--primary-blue);">
+                                    <th>Date</th>
+                                    <th>Symptoms</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if history %}
+                                    {% for record in history %}
+                                    <tr>
+                                        <td><small>{{ record.date }}</small></td>
+                                        <td><small>{{ record.symptoms }}</small></td>
+                                        <td><span class="badge badge-medical">{{ record.disease }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td colspan="3" class="text-center py-4">No recent history found.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="modal fade" id="diseaseModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content bg-dark text-white"><div class="modal-header border-0"><h5>Predicted Disease</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><h4>{{ predicted_disease }}</h4></div></div></div></div>
+    <div class="modal fade" id="descriptionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content bg-dark text-white"><div class="modal-header border-0"><h5>Description</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>{{ dis_des }}</p></div></div></div></div>
+    <div class="modal fade" id="precautionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content bg-dark text-white"><div class="modal-header border-0"><h5>Precautions</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul>{% for i in my_precautions %}<li>{{ i }}</li>{% endfor %}</ul></div></div></div></div>
+    <div class="modal fade" id="medicationsModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content bg-dark text-white"><div class="modal-header border-0"><h5>Medications</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul>{% for i in medications %}<li>{{ i }}</li>{% endfor %}</ul></div></div></div></div>
+    <div class="modal fade" id="workoutsModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content bg-dark text-white"><div class="modal-header border-0"><h5>Workouts</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul>{% for i in workout %}<li>{{ i }}</li>{% endfor %}</ul></div></div></div></div>
+    <div class="modal fade" id="dietsModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content bg-dark text-white"><div class="modal-header border-0"><h5>Diets</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul>{% for i in my_diet %}<li>{{ i }}</li>{% endfor %}</ul></div></div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const startSpeechRecognitionButton = document.getElementById('startSpeechRecognition');
+        const symptomsInput = document.getElementsByName('symptoms')[0];
+
+        startSpeechRecognitionButton.addEventListener('click', () => {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.onresult = (event) => {
+                symptomsInput.value = event.results[0][0].transcript;
+            };
+            recognition.start();
+        });
+    </script>
+</body>
+</html>
